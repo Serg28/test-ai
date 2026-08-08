@@ -4,7 +4,7 @@ owner: "serg"
 reviewers: ["Tech Lead"]
 updated_at: "2026-08-08"
 feature_size: "M"
-target_surfaces: []  # filled in §4 — subset of: backend-service | web-frontend | mobile-app | desktop-app | cli | worker | library-sdk. Read (never re-derived) by api/sequences/tasks/plan-tests/review → _shared/surfaces.md
+target_surfaces: [web-frontend]  # filled in §4 — subset of: backend-service | web-frontend | mobile-app | desktop-app | cli | worker | library-sdk. Read (never re-derived) by api/sequences/tasks/plan-tests/review → _shared/surfaces.md
 ---
 
 # Software Architecture Document — livewire-dashboard
@@ -80,17 +80,13 @@ C4Context
 
 ## 4. Solution strategy
 
-<!-- 🎯 Why: the 3–4 STRATEGIC PILLARS every ADR grows from. Without §4 each ADR looks random —
-     there's no umbrella. ⭐ The densest section — the blast-radius gate fires almost always here
-     (decisions are irreversible + multi-module).
-     📋 Write: 3–4 choices; each a heading + 2–3 sentences of rationale.
-     📌 «Store content as a table of typed blocks» is a pillar — ADR-0001 grows from it. -->
-
 **Top strategic choices (the seeds for ADRs):**
 
-1. **<e.g. Module isolation through events>** — <2–3 sentences citing quality goals + constraints>.
-2. **<e.g. Single-store persistence>** — <2–3 sentences>.
-3. **<e.g. Server-rendered read side>** — <2–3 sentences>.
+1. **Target surface: `web-frontend` only** — the dashboard is one server-rendered container reading MariaDB directly through Eloquent; no separate backend-API container, since nothing else consumes a JSON contract (spec §3 rules out third-party integration, and non-goals forbid write/trigger actions from the UI). Single surface → the surface-count gate does not fire (fires only on >1 surface); no ADR. `target_surfaces: [web-frontend]` is written to this file's frontmatter.
+2. **UI architecture: Livewire full-page components, Filament-inspired but hand-rolled** — resolves the spec §8 open question directly. See **ADR-0001** (`adr/0001-livewire-full-page-components-for-dashboard.md`).
+3. **Direct Eloquent access, no service/repository layer** — `RunList`/`RunDetail` query the `CliRun` model directly (via named query scopes for the shared "50 most recent, newest-first" logic AC-01 and AC-05 both need). Reversible, single-module — no ADR; the repo has no existing service-layer convention to match (sad.md §2), and a course-scale, two-query feature does not earn one yet (YAGNI).
+4. **No caching layer** — every status read reflects the `CliRun` record directly at request time. This is not a new choice; it is spec §8's own resolution of "can status be cached — no, until revisited" carried forward verbatim, and it is what makes the §1 "0% stale-status reads" quality goal true by construction. No ADR — inherited from the spec, not decided here.
+5. **No new inter-module coupling** — the dashboard only *reads* records; it does not call, queue, or send anything to the console-command side of the app (non-goal: no trigger/retry/cancel from the UI). Concurrency is a non-issue for the same reason: no writes originate from this feature.
 
 Each tactical decision in later sections should trace to one of these seeds. Tactical decisions that *contradict* a strategic choice are red flags — surface them in §11.
 
@@ -218,8 +214,7 @@ sequenceDiagram
 
 | # | Title | Status | Section |
 |---|---|---|---|
-| <NNNN> | <imperative — e.g. "Use a sliding-window counter for rate limiting"> | Accepted | §<N> |
-| <NNNN> | <imperative — e.g. "Co-locate the worker in the API process"> | Accepted | §<N> |
+| 0001 | Use Livewire full-page components for the dashboard | Accepted | §4 |
 
 ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 

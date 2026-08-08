@@ -9,10 +9,6 @@ target_surfaces: [web-frontend]  # filled in §4 — subset of: backend-service 
 
 # Software Architecture Document — livewire-dashboard
 
-<!-- 12 Arc42 sections. Empty section → <!-- N/A: <one-line reason> -->. -->
-<!-- C4 Context (L1) lives inline in §3. C4 Container (L2) lives inline in §5. -->
-<!-- Numbers in §10 come VERBATIM from spec.md §6 NFR — no inventing, no rounding. -->
-
 ## 1. Introduction and goals
 
 **Intent.** A read-only web dashboard for the test-ai CLI tool: any developer who runs `test-ai` console commands can check the outcome of a recorded run — its status, timing, and result — without querying the database directly or re-reading raw CLI output. The dashboard becomes the default place a developer looks first to check run status, replacing ad-hoc DB access.
@@ -181,15 +177,9 @@ This resolves spec §8's open question ("where does this dashboard actually run 
 - Tracing: none — Laravel's default log channel (`storage/logs`) is sufficient at this scale.
 
 **Scaling thresholds:**
-- N/A — single developer, single process, no concurrent load beyond spec §6's ≥5 req/s target. -->
+- N/A — single developer, single process, no concurrent load beyond spec §6's ≥5 req/s target.
 
 ## 8. Crosscutting concepts
-
-<!-- 🎯 Why: CROSS-CUTTING PATTERNS spanning several modules: logging, errors, authorization, ID
-     strategy, events, caching. ⭐ The second-densest section. A pattern inside one module is NOT
-     here; a project-wide convention belongs in the convention file.
-     📋 Write: a table — concept / convention / where defined. One row per concept.
-     📌 e.g. «sortable time-based IDs generated in the app layer» as a default from the convention file. -->
 
 | Concept | Convention | Where defined |
 |---|---|---|
@@ -203,11 +193,6 @@ This resolves spec §8's open question ("where does this dashboard actually run 
 
 ## 9. Architecture decisions
 
-<!-- 🎯 Why: the REVERSE INDEX onto the adr/ folder. `ls adr/` gives the files; §9 gives the
-     semantics — why they exist, which SAD section they attach to, what status.
-     📋 Write: a 4-column table, one row per ADR. Mixed status is fine.
-     📌 e.g. «0001 | Store content as a table of typed blocks | Accepted | §4». -->
-
 | # | Title | Status | Section |
 |---|---|---|---|
 | 0001 | Use Livewire full-page components for the dashboard | Accepted | §4 |
@@ -215,13 +200,6 @@ This resolves spec §8's open question ("where does this dashboard actually run 
 ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 
 ## 10. Quality requirements
-
-<!-- 🎯 Why: the QUALITY TREE — take a goal from §1 and break it into concrete leaves: tests,
-     metrics, configs, drills. ⭐ Without §10, §1 is a manifesto. With §10 each declaration maps
-     to something PROVABLE.
-     📋 Write: per §1 goal — When / Then / How-verify. Numbers from spec §6 NFR VERBATIM (don't
-     round ≤250ms to ≤300ms — that's a critic F6 hit).
-     📌 e.g. «p95 ≤ 500 ms on a block update, verified by a 100 req/s load test». -->
 
 Each top-3 goal from §1 expanded into a full scenario:
 
@@ -242,14 +220,6 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 ## 11. Risks and technical debt
 
-<!-- 🎯 Why: ⭐ collects EVERYTHING that can break — not only the technical. Without §11 risks get
-     discussed at standups and lost; debt lives only in the head of whoever accepted it.
-     📋 Write: a risk/debt table — severity — mitigation — owner. Accepted debt in its own block.
-     📌 The first risk is often a product risk, not a technical one. That's normal. -->
-
-<!-- Severity literals: Low / Medium / High for regular risks; "Open question" for rows created by
-     a Save-as-OQ resolution during the Socratic walk (see references/socratic.md). -->
-
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
 | `docs/architecture-map.md` is stale — it still says "no HTTP layer / no frontend" while a full web skeleton is on disk (§2) | Medium | Re-run `survey` to reconcile the map with the real repo state, ideally before or alongside this feature's `tasks`/`implement` | Architect |
@@ -263,11 +233,6 @@ Each top-3 goal from §1 expanded into a full scenario:
 - No caching layer — every status read reflects the `CliRun` record directly (§4, spec §8). Deliberate: it's what makes the §1 "0% stale-status reads" quality goal true by construction; revisit only if read load ever outgrows a direct DB read.
 
 ## 12. Glossary
-
-<!-- 🎯 Why: ⭐ the DOMAIN GLOSSARY that ends arguments a year later («checkpoint — weekly or
-     biweekly? quarter — calendar or fiscal?»).
-     📋 Write: a term / meaning table. Business + technical terms mixed.
-     📌 e.g. «Lesson | a unit inside a course made of blocks (text, video)». -->
 
 | Term | Meaning |
 |---|---|

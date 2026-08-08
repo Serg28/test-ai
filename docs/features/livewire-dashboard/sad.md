@@ -15,27 +15,20 @@ target_surfaces: []  # filled in §4 — subset of: backend-service | web-fronte
 
 ## 1. Introduction and goals
 
-<!-- 🎯 Why: durable memory of «what + the three dominant qualities + who cares». A year from
-     now nobody recalls which three qualities were critical for this system.
-     📋 Write: 1 ¶ intent + 3 lines of top-3 quality goals + a stakeholders table.
-     ¶4 is the override slot — critic `Override` resolutions emit «Decision override: <headline>
-     — rationale: <reason>» bullets here so downstream skills see the deliberate choice. -->
-
-**Intent.** <One paragraph from spec §2 Goals — what we're building and for whom.>
+**Intent.** A read-only web dashboard for the test-ai CLI tool: any developer who runs `test-ai` console commands can check the outcome of a recorded run — its status, timing, and result — without querying the database directly or re-reading raw CLI output. The dashboard becomes the default place a developer looks first to check run status, replacing ad-hoc DB access.
 
 **Top-3 quality goals (1-liners; full scenarios in §10):**
 
-1. <e.g. "Availability under partial failure of a downstream module">
-2. <e.g. "Read performance for the dashboard under data-scale growth">
-3. <e.g. "Recoverability with <30 min RTO">
+1. Status accuracy — 0% stale-status reads; what the dashboard shows must exactly match the run record's current value at the moment of that load.
+2. Read performance — p95 ≤ 500 ms on both the run list and the run detail load.
+3. Availability — ≥ 99% successful page loads.
 
 **Stakeholders.**
 
 | Role | Interest | Sign-off owner? |
 |---|---|---|
-| <author role from glossary> | <feature usage> | No |
-| <consumer role from glossary> | <read usage> | No |
-| Tech Lead | SAD approval | Yes |
+| Developer (CONTEXT.md — runs CLI commands, reviews results, the single actor of this feature) | Checks run status/outcome via the dashboard instead of the DB | No |
+| Tech Lead | SAD approval; owns the open questions on deployment reach and future auth (spec §8) | Yes |
 
 <!-- Decision overrides (¶4) — populated by the critic resolution loop, empty otherwise. -->
 

@@ -193,13 +193,13 @@ This resolves spec §8's open question ("where does this dashboard actually run 
 
 | Concept | Convention | Where defined |
 |---|---|---|
-| Logging | <e.g. structured, fields `module=<name>`> | <convention file §X or here> |
-| Authentication | <e.g. token-based via middleware> | <convention file §X> |
-| Error handling | <e.g. domain sentinel → ports error mapping → JSON> | <convention file §X> |
-| ID strategy | <e.g. sortable time-based ID in the app layer> | <convention file §X> |
-| Internationalisation | <e.g. N/A, single language> | — |
-| Observability | <e.g. tracing on the request boundary> | — |
-| Events | <module-specific patterns, if any> | <here> |
+| Logging | Laravel's default single log channel, no dashboard-specific fields | `docs/architecture-map.md` §Conventions |
+| Authentication | None — no login, no permission checks (deliberate) | spec §3, §6.1 |
+| Error handling | Laravel's default exception handler for real errors; "run not found" (AC-02) is an expected Livewire-level branch (`abort(404)` / an in-component not-found state), not a caught exception | here + spec §5 AC-02 |
+| ID strategy | Eloquent auto-increment integer PK | `docs/architecture-map.md` §Conventions |
+| Internationalisation | N/A — single language (English UI text) | — |
+| Observability | N/A at this scale — see §7 monitoring | — |
+| Events | N/A — the dashboard only reads, it emits nothing | — |
 
 ## 9. Architecture decisions
 

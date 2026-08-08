@@ -252,12 +252,15 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| <e.g. Worker lag may reach hours during a downstream outage> | Medium | <alert >10 min, on-call playbook, retry backoff> | <DevOps> |
-| <e.g. No event-schema versioning in v1> | Medium | <ADR-NNNN planned for v2, tolerate unknown fields> | <Backend> |
-| Open architectural decision: <decision-headline> | Open question | Resolve before <stage trigger or YYYY-MM-DD>; <inline rationale from the Save-as-OQ> | <owner> |
+| `docs/architecture-map.md` is stale — it still says "no HTTP layer / no frontend" while a full web skeleton is on disk (§2) | Medium | Re-run `survey` to reconcile the map with the real repo state, ideally before or alongside this feature's `tasks`/`implement` | Architect |
+| No deadline or effort budget was stated in spec.md (§2) | Low | PM confirms sprint allocation before `sdd:tasks` runs | PM |
+| The CLI side that actually *writes* `CliRun` records (console commands + the recording mechanism) is not built yet in this repo — the dashboard will show only the empty state (AC-06) until it exists | Medium | Sequence delivery so the CLI-run recording capability lands before or alongside this feature, so AC-01/AC-05/AC-07 are demoable | Tech Lead |
+| Open architectural decision: mechanism to detect/reclaim a CLI run stuck showing `running` after its process died | Open question | Resolve before `sdd:data-model livewire-dashboard`; default until then — the dashboard faithfully shows the last recorded value even if stale (spec §8) | Tech Lead |
+| Open architectural decision: should the dashboard support triggering new CLI runs from the UI | Open question | Resolve before a follow-up feature is proposed; default until then — view-only (spec §3, §8) | PM |
+| Open architectural decision: add login/access control once this leaves the course/demo context | Open question | Resolve before any production-facing deployment; default until then — no auth, local-only reach per §7 (spec §6.1, §8) | Tech Lead |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
-- <e.g. the entity is immutable / unversioned — OK for v1, may need audit versioning in v2>
+- No caching layer — every status read reflects the `CliRun` record directly (§4, spec §8). Deliberate: it's what makes the §1 "0% stale-status reads" quality goal true by construction; revisit only if read load ever outgrows a direct DB read.
 
 ## 12. Glossary
 

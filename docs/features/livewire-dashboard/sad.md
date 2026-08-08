@@ -173,25 +173,15 @@ sequenceDiagram
 
 ## 7. Deployment view
 
-<!-- 🎯 Why: the TOPOLOGY DevOps must know without reading the deploy charts — how many replicas,
-     where the background worker lives, AT WHAT NUMBERS we scale.
-     📋 Write: 2–3 sentences on topology + monitoring + concrete threshold numbers.
-     📌 e.g. «500 authors → partition by quarter» (not «we'll think about scale later»).
-     🎯 N/A allowed for XS/S that reuses an existing deployment unit with no change.
-     Deployment-diagram scaffold → templates/deployment.md. -->
-
-<Topology in 2–3 sentences. Where it runs, replicas, scaling thresholds.>
+This resolves spec §8's open question ("where does this dashboard actually run and who can reach it?", due at this stage). The dashboard runs inside the same `laradock-php-fpm-1` Docker container as the rest of the app, served via `php artisan serve` (or the dev server) bound to the developer's own machine — no port is published to a LAN or shared network, one process, no replicas, no separate deployment unit. Because reach stays local-only, spec §3's "no login" non-goal keeps its safety assumption intact ("any developer with network access is treated as trusted" only holds because that network is one developer's own machine).
 
 **Monitoring:**
-- <Metrics — e.g. `<metric_name>`>
-- <Alerts — e.g. «worker lag > 10 min → page on-call»>
-- <Tracing — e.g. spans on the request boundary>
+- Metrics: none beyond Laravel's defaults — course/demo scale doesn't warrant a metrics pipeline.
+- Alerts: none — no on-call, single local process.
+- Tracing: none — Laravel's default log channel (`storage/logs`) is sufficient at this scale.
 
 **Scaling thresholds:**
-- <e.g. comfortable in one table up to N rows/year>
-- <e.g. partition by quarter above N rows/year>
-
-<!-- For XS/S with no deployment change: <!-- N/A: reuses existing deployment unit, no infra change --> -->
+- N/A — single developer, single process, no concurrent load beyond spec §6's ≥5 req/s target. -->
 
 ## 8. Crosscutting concepts
 

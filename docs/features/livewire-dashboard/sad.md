@@ -55,37 +55,27 @@ target_surfaces: []  # filled in §4 — subset of: backend-service | web-fronte
 
 ## 3. Context and scope
 
-<!-- 🎯 Why: draws the SYSTEM BOUNDARY — who talks to it from outside, where the trust zone ends.
-     Without §3, §5 and §8 (authorization) blur — unclear what's «inside» vs «outside».
-     📋 Write: 2–3 sentences of business context + an external-systems table + a C4Context block.
-     📌 «External: none (deliberate, no third-party in v1)» is itself a decision worth stating.
-     Trust boundary — the line past which you don't trust data without checking it.
-     Never N/A — greenfield still draws the planned actors + external systems. -->
+test-ai is a single Laravel monolith with two internal capabilities: console commands that execute AI test runs, and (new in this feature) a read-only web dashboard that lets a developer review those runs. Both capabilities share one MariaDB store. There is no third-party integration — no identity provider, no notification service, no external API — by explicit spec decision (§3, §6.1): the dashboard is open to any developer who can reach the app, no login.
 
-<Business context in 2–3 sentences. What the system does for whom.>
-
-<!-- brownfield: <one-line scan summary> (or «N/A — greenfield repo» if no source existed) -->
+<!-- brownfield: repo scan (2026-08-08) — fresh Laravel 13.8 skeleton (composer.json), no CLI commands or CLI-run model built yet (app/Console/Commands/ empty, only the default User model); a web skeleton (routes/web.php, resources/views/welcome.blade.php, Vite+Tailwind) exists but is unused. This feature is effectively greenfield for the web surface. -->
 
 **External systems (in / out):**
 
 | Actor or system | Type | Interaction |
 |---|---|---|
-| <author role> | Person | <what they do> |
-| <external service> | System (internal/external) | <interaction> |
-| <identity provider> | System (external) | <provides auth tokens> |
+| Developer (CONTEXT.md — single actor, no distinct roles) | Person | Runs `test-ai` CLI commands; opens the dashboard in a browser to check run status/results |
+| *(none)* | — | Deliberate: no third-party system in v1 — no auth provider, no notifier, no external API (spec §3, §6.1) |
 
-**C4 Context (L1):** <!-- syntax → references/c4-mermaid-syntax.md. Real names, no <placeholder> stubs. -->
+**C4 Context (L1):**
 
 ```mermaid
 C4Context
-    title <feature> — System Context
+    title livewire-dashboard — System Context
 
-    Person(actor, "<Actor role>", "<intent>")
-    System(app, "<Our system>", "<one-sentence description>")
-    System_Ext(ext, "<External system>", "<one-sentence description>")
+    Person(dev, "Developer", "Runs test-ai CLI commands; opens the dashboard to check outcomes")
+    System(app, "test-ai", "Laravel monolith: CLI console commands + the read-only dashboard, sharing one MariaDB store")
 
-    Rel(actor, app, "<interaction>", "<protocol>")
-    Rel(app, ext, "<interaction>", "<protocol>")
+    Rel(dev, app, "Runs commands / views run history and detail", "CLI, HTTPS")
 ```
 
 ## 4. Solution strategy

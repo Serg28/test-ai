@@ -1,0 +1,50 @@
+{
+  "slug": "_scaffold",
+  "tasks": [
+    {
+      "id": "S1",
+      "title": "Create the Laravel project skeleton (Artisan console entry point)",
+      "layer": "scaffold",
+      "deps": [],
+      "acs": [],
+      "dod": "`composer install` succeeds; `php artisan --version` runs",
+      "files_hint": ["composer.json", "app/Console/Commands/", "routes/console.php", "bootstrap/"]
+    },
+    {
+      "id": "S2",
+      "title": "Wire the Pest test harness + a smoke test",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "`php artisan test` runs green with a passing 'app boots' smoke test",
+      "files_hint": ["tests/Feature/", "tests/Unit/", "tests/Pest.php"]
+    },
+    {
+      "id": "S3",
+      "title": "Set up SQLite + an initial empty migration",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "`php artisan migrate` applies and `php artisan migrate:rollback` reverts cleanly against `database/database.sqlite`",
+      "files_hint": ["database/database.sqlite", "database/migrations/", ".env"]
+    },
+    {
+      "id": "S4",
+      "title": "Add the CI workflow (composer install + Pest + Pint)",
+      "layer": "scaffold",
+      "deps": ["S2"],
+      "acs": [],
+      "dod": "CI config is valid YAML; runs `composer install`, `php artisan test`, `./vendor/bin/pint --test`",
+      "files_hint": [".github/workflows/ci.yml"]
+    },
+    {
+      "id": "S5",
+      "title": "Write CLAUDE.md from the chosen conventions",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "CLAUDE.md documents the stack, layout, ID/persistence, test, and lint conventions from docs/architecture-map.md",
+      "files_hint": ["CLAUDE.md"]
+    }
+  ]
+}

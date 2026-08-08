@@ -32,7 +32,7 @@ target_surfaces: [web-frontend]  # filled in §4 — subset of: backend-service 
 
 **Technical.**
 - PHP 8.3.
-- Laravel ^13.8 (actual, from `composer.json`). **Override note:** `docs/architecture-map.md` currently states Laravel 11.x with "no HTTP layer / no frontend" — that is stale relative to the checked-out code (a full web skeleton — `routes/web.php`, `resources/views/`, `vite.config.js`, Tailwind v4 — is already on disk, just unused). This SAD documents the real stack; the map itself should be reconciled by re-running `survey` (tracked as a §11 risk).
+- Laravel ^13.8 (actual, from `composer.json`). **Override note:** `docs/architecture-map.md` currently states Laravel 11.x with "no HTTP layer / no frontend" — that is stale relative to the checked-out code (a full web skeleton — `routes/web.php`, `resources/views/`, `vite.config.js`, Tailwind v4 — is already on disk, just unused). The same map also claims Pest as the test framework and `app/Exceptions/Handler.php` as the exception-handling location — both also stale (see Conventions below). This SAD documents the real stack; the map itself should be reconciled by re-running `survey` (tracked as a §11 risk).
 - MariaDB (Laradock, Docker), accessed only via Eloquent ORM from inside the `laradock-php-fpm-1` container.
 - Frontend build tooling already scaffolded but unstyled: Vite + `@tailwindcss/vite` v4 (`package.json`). Livewire is **not** yet a composer dependency — adding it is a §4 decision, not assumed here.
 - No architecture-layering convention is established yet beyond Laravel defaults (single-responsibility Console Commands, Eloquent Models) — no hexagonal/ports style in the repo to inherit.
@@ -43,8 +43,9 @@ target_surfaces: [web-frontend]  # filled in §4 — subset of: backend-service 
 - Team: solo developer, course/demo-scale project (per spec §1, §6.1).
 
 **Conventions.**
-- `docs/architecture-map.md` §Conventions: Eloquent auto-increment integer PKs; migrations via `php artisan make:migration`; Pest tests in `tests/Unit/` + `tests/Feature/`; lint via `./vendor/bin/pint --test`.
-- Error handling: exceptions bubble to Laravel's default handler (`app/Exceptions/Handler.php`); no custom error-mapping layer exists yet.
+- `docs/architecture-map.md` §Conventions: Eloquent auto-increment integer PKs; migrations via `php artisan make:migration`; lint via `./vendor/bin/pint --test`.
+- **Override note (test framework):** the map claims Pest; the actual repo (`composer.json` has no `pestphp/pest` require-dev, and `tests/Feature/ExampleTest.php` is written `extends TestCase` PHPUnit-class style) uses plain PHPUnit today, in `tests/Unit/` + `tests/Feature/`. This feature's tests follow the repo's real convention — PHPUnit, not Pest — until `survey` reconciles the map.
+- Error handling: exceptions are configured via `bootstrap/app.php`'s `withExceptions()` closure (Laravel 11+'s mechanism — this repo has no `app/Exceptions/Handler.php`, contra the stale map); no custom error-mapping layer exists yet.
 
 **Regulatory / external.**
 - N/A — internal course/demo data only, no PII, no compliance controls apply (spec §6.1).
@@ -185,7 +186,7 @@ This resolves spec §8's open question ("where does this dashboard actually run 
 |---|---|---|
 | Logging | Laravel's default single log channel, no dashboard-specific fields | `docs/architecture-map.md` §Conventions |
 | Authentication | None — no login, no permission checks (deliberate) | spec §3, §6.1 |
-| Error handling | Laravel's default exception handler for real errors; "run not found" (AC-02) is an expected Livewire-level branch (`abort(404)` / an in-component not-found state), not a caught exception | here + spec §5 AC-02 |
+| Error handling | Laravel's default exception config (`bootstrap/app.php` `withExceptions()`) for real errors; "run not found" (AC-02) is an expected Livewire-level branch (`abort(404)` / an in-component not-found state), not a caught exception | here + spec §5 AC-02 |
 | ID strategy | Eloquent auto-increment integer PK | `docs/architecture-map.md` §Conventions |
 | Internationalisation | N/A — single language (English UI text) | — |
 | Observability | N/A at this scale — see §7 monitoring | — |
@@ -222,7 +223,7 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| `docs/architecture-map.md` is stale — it still says "no HTTP layer / no frontend" while a full web skeleton is on disk (§2) | Medium | Re-run `survey` to reconcile the map with the real repo state, ideally before or alongside this feature's `tasks`/`implement` | Architect |
+| `docs/architecture-map.md` is stale in three ways — "no HTTP layer / no frontend" while a full web skeleton is on disk, claims Pest while the repo runs plain PHPUnit, and cites `app/Exceptions/Handler.php` which doesn't exist in this Laravel 13 skeleton (§2) | Medium | Re-run `survey` to reconcile the map with the real repo state, ideally before or alongside this feature's `tasks`/`implement` | Architect |
 | No deadline or effort budget was stated in spec.md (§2) | Low | PM confirms sprint allocation before `sdd:tasks` runs | PM |
 | The CLI side that actually *writes* `CliRun` records (console commands + the recording mechanism) is not built yet in this repo — the dashboard will show only the empty state (AC-06) until it exists | Medium | Sequence delivery so the CLI-run recording capability lands before or alongside this feature, so AC-01/AC-05/AC-07 are demoable | Tech Lead |
 | Open architectural decision: mechanism to detect/reclaim a CLI run stuck showing `running` after its process died | Open question | Resolve before `sdd:data-model livewire-dashboard`; default until then — the dashboard faithfully shows the last recorded value even if stale (spec §8) | Tech Lead |

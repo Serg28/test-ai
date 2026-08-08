@@ -26,26 +26,26 @@ The dashboard is a single, read-only web-frontend surface (sad.md §4 Target-sur
 
 ## Considered options
 
-1. **Livewire full-page components (chosen)** — two Livewire classes (`RunList`, `RunDetail`) wired directly as route targets, each owning its own query + pagination, structured after Filament's Resource/Table pattern but hand-written (no `filament/filament` dependency).
+1. **Livewire full-page components (chosen)** — two Livewire classes (`RunList`, `RunDetail`) wired directly as route targets, each owning its own query (fixed at the 50-most-recent window per spec §3 — no pagination, filtering, or sorting controls), structured after Filament's Resource/Table pattern but hand-written (no `filament/filament` dependency).
 2. **Plain Blade controllers** — two controller actions (`DashboardController@index`, `@show`) returning Blade views from an Eloquent query; zero new dependencies, the Laravel default.
 
 ## Decision outcome
 
-**Chosen:** Option 1, Livewire full-page components. It satisfies the spec's explicit Filament-inspired-but-not-Filament instruction directly, and it sets up cleanly for the live-updating door spec §3/§8 leaves open — extending a Livewire component to poll or push later is additive, where retrofitting Livewire onto plain Blade controllers later would touch every view and route again. The one new dependency (`livewire/livewire`) is judged worth it against that avoided rewrite.
+**Chosen:** Option 1, Livewire full-page components. It satisfies the spec's explicit Filament-inspired-but-not-Filament instruction directly, and it sets up cleanly for the live-updating door spec §3 leaves open — extending a Livewire component to poll or push later is additive, where retrofitting Livewire onto plain Blade controllers later would touch every view and route again. The one new dependency (`livewire/livewire`) is judged worth it against that avoided rewrite.
 
 ## Consequences
 
 **Positive**
 - Matches spec §8's stated design-stage preference directly — no re-litigation needed.
 - A future auto-refresh/live-status feature (spec §3's explicitly-open door) extends `RunList`/`RunDetail` in place; no rendering-model rewrite.
-- Each component owns one query/pagination concern, giving the "Filament-inspired resource" structure without installing Filament.
+- Each component owns one query concern (the fixed 50-most-recent window, no pagination per spec §3), giving the "Filament-inspired resource" structure without installing Filament.
 
 **Negative**
 - Adds `livewire/livewire` as a new composer dependency, and the accompanying JS asset Livewire injects into the page.
 - A Livewire component carries more ceremony (`mount()`/`render()` lifecycle, a paired Blade view under `resources/views/livewire/`) than a bare controller action for what is, today, a fully static read-only page.
 
 **Neutral**
-- If the live-updating door in spec §3/§8 is never opened, this is one layer more than a plain-Blade page strictly needed — an accepted bet, not a regret in isolation.
+- If the live-updating door in spec §3 is never opened, this is one layer more than a plain-Blade page strictly needed — an accepted bet, not a regret in isolation.
 
 ## Links
 

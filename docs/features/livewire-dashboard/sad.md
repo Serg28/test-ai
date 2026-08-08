@@ -131,31 +131,45 @@ C4Container
 
 ## 6. Runtime view
 
-<!-- 🎯 Why: the RUNTIME FLOW of 1–2 critical scenarios — who talks to whom, when, in what order.
-     Without §6, §5 is just boxes with no life.
-     📋 Write: a Mermaid sequenceDiagram. Participants are names from §5 (don't invent new ones).
-     Messages are semantic («saves a draft»), NO HTTP verbs / paths / status codes — endpoint-level
-     sequences arrive at the `api` stage.
-     📌 e.g. «author → web: composes draft → web → content API: save». Seed the primary flow(s) here;
-     the `sequences` stage then covers every §5 AC (no cap). Never N/A for M+; XS/S keeps ≥1 happy-path flow. -->
-
-**Critical flow 1: <flow name>**
+**Critical flow 1: view run list (AC-01, AC-06)**
 
 ```mermaid
 sequenceDiagram
-    actor Actor
-    participant Web
-    participant Service
-    participant Store
-    Actor->>Web: <action>
-    Web->>Service: <call>
-    Service->>Store: <write>
-    Store-->>Service: ok
-    Service-->>Web: result
-    Web-->>Actor: confirmation
+    actor Developer
+    participant Dashboard as Dashboard Web App
+    participant DB as MariaDB
+
+    Developer->>Dashboard: opens the dashboard
+    Dashboard->>DB: reads the 50 most recent CliRun records, newest-first
+    alt no runs recorded yet
+        DB-->>Dashboard: empty result
+        Dashboard-->>Developer: shows the empty-state message
+    else runs exist
+        DB-->>Dashboard: run records
+        Dashboard-->>Developer: shows the run table (command, status, start/finish time)
+    end
 ```
 
-**Critical flow 2: <e.g. async event propagation>** — <if applicable, otherwise N/A>.
+**Critical flow 2: view run detail (AC-02, AC-07)**
+
+```mermaid
+sequenceDiagram
+    actor Developer
+    participant Dashboard as Dashboard Web App
+    participant DB as MariaDB
+
+    Developer->>Dashboard: opens a run's detail page
+    Dashboard->>DB: reads the CliRun by id
+    alt run not found
+        DB-->>Dashboard: no matching record
+        Dashboard-->>Developer: shows "no such run exists"
+    else run exists
+        DB-->>Dashboard: the run record
+        Dashboard-->>Developer: shows full detail (command, status, timing, result/error summary)
+    end
+```
+
+<!-- AC-03 (no-login), AC-04 (always exactly one status), AC-05 (exact cross-context reflection) are cross-cutting invariants, not flows — covered by §8 crosscutting + §10 quality scenarios. The `sequences` stage completes full §5-AC coverage. -->
 
 ## 7. Deployment view
 

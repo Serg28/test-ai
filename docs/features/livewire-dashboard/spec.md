@@ -21,6 +21,8 @@ The committed approach: a single web page that lists the most recent recorded CL
 
 Traceability: `docs/architecture-map.md` (status: current, mode: greenfield-bootstrap) still fixes the project foundation as CLI-only with "no HTTP layer" / "no frontend" — that statement is now stale relative to the checked-out code and should be reconciled by re-running `survey` alongside or after `design`. Separately, no "CLI run" data entity exists in the codebase yet (only the default `User` model/migrations are present); this feature's `data-model` stage is where that entity gets its schema — this spec only fixes what a CLI run means at the business level (see `CONTEXT.md`).
 
+A CLI run's record is created the moment its command starts, showing status `running` with no finish time yet, and the same record is updated to a terminal status (`succeeded` / `failed`) with its finish time recorded when the command completes — this is what makes US-02's "still running" observable at all.
+
 ## 2. Goals
 
 - A developer can check the outcome of any recorded CLI run without querying the database or re-reading raw CLI output.
@@ -33,6 +35,7 @@ Traceability: `docs/architecture-map.md` (status: current, mode: greenfield-boot
 - No ability to trigger, retry, or cancel CLI runs from the dashboard — the feature is view-only by explicit scope decision.
 - No filtering, search, sorting, or pagination controls — the list shows a fixed, bounded window of the most recent runs (see AC-01), keeping the MVP to the smallest useful list view.
 - No real-time/live-updating view (auto-refresh or push updates) — the dashboard reflects state as of page load; live updates are a possible later feature, not part of this scope.
+- No changes to how CLI commands themselves execute, in order to make them write or update a CLI-run record — this feature only reads and displays whatever run records already exist; the run-recording mechanism is assumed to already exist or to be delivered as a paired concern, not built here (see §1).
 
 ## 4. User stories
 
@@ -78,7 +81,7 @@ Traceability: `docs/architecture-map.md` (status: current, mode: greenfield-boot
 
 **Given** at least one CLI run has been recorded
 **When** a developer opens the dashboard
-**Then** the system displays the 50 most recent runs newest-first, each showing its command, status, and start/finish time
+**Then** the system displays the 50 most recent runs, ordered newest-first by start time; each row shows the run's full command invocation (including the arguments the developer entered, not just the bare command name), its status, its start time, and — once it has finished — its finish time; a run that is still in progress shows no finish time yet and is visibly marked as in progress rather than left blank
 
 ### AC-02 (US-06) — error
 
@@ -110,6 +113,12 @@ Traceability: `docs/architecture-map.md` (status: current, mode: greenfield-boot
 **When** a developer opens the dashboard
 **Then** the system shows a clear empty-state message instead of an empty or broken table
 
+### AC-07 (US-06) — happy path
+
+**Given** a CLI run exists
+**When** a developer opens its detail view
+**Then** the system shows the run's full command invocation, status, start/finish time, and its recorded result or error summary — the same result AC-05 requires the dashboard to reflect exactly
+
 ## 6. Non-functional requirements
 
 | Aspect | Target | Measurement |
@@ -136,11 +145,13 @@ Traceability: `docs/architecture-map.md` (status: current, mode: greenfield-boot
 
 - **Manual DB queries to check run status** — baseline: 100% of status checks require direct DB/CLI-output access today (no dashboard exists), target: 0% within one sprint of release.
 - **Dashboard load success rate** — baseline: N/A (feature doesn't exist yet), target: ≥ 99% successful loads (no unhandled errors) over the first month of use.
-- **Time to see latest run status** — baseline: N/A, target: ≤ 5 seconds from opening the dashboard URL.
+- **Time to see latest run status** — baseline: N/A, target: ≤ 5 seconds from opening the dashboard URL, measured end-to-end as the full developer workflow (open the link, page loads, status is visible) — a broader human-workflow measurement than §6's server-response p95 targets, not a duplicate or contradiction of them.
 
 ## 8. Open questions
 
 - [ ] Should the dashboard eventually support triggering new CLI runs directly from the UI (not just viewing)? Default now: no — view-only for this feature. — owner: PM, due: before a follow-up feature is proposed
 - [ ] Should login/access control be added once this leaves the course/demo context (e.g. deployed somewhere reachable by non-trusted users)? Default now: no auth, open access. — owner: Tech Lead, due: before any production-facing deployment
 - [ ] Where does this dashboard actually run and who can reach it? `docs/architecture-map.md` currently fixes the whole project inside a single local Docker dev container with no network exposure, which §3/AC-03's "any developer who can reach the app" outgrows. Default now: local dev/course environment only (e.g. `php artisan serve` on the developer's machine or inside the dev container) — no shared/networked deployment assumed. — owner: Tech Lead, due: at `sdd:design livewire-dashboard`
-- [ ] Confirmed with the user mid-interview: the design stage should draw on Filament's architecture (an admin-panel toolkit built on Livewire — its resource/table/action structuring patterns) as inspiration, but the resulting code should read as this project's own implementation, not an installed copy/reskin of that toolkit for a third-party developer reading the code. Default now: carried forward as a design-stage preference, not a spec-level decision. — owner: Tech Lead, due: at `sdd:design livewire-dashboard`
+- [ ] Confirmed with the user mid-interview: the design stage should draw on Filament's architecture (an admin-panel toolkit built on Livewire — its resource/table/action structuring patterns) as inspiration, but the resulting code should read as this project's own implementation, not an installed copy/reskin of that toolkit for a third-party developer reading the code. Livewire itself (a library for building interactive Laravel components that update without a full page reload) is a design-stage technical decision, not a business requirement of this spec — §3's "no real-time/live-updating view" non-goal does not forbid using Livewire's component model without auto-refresh, but nothing here requires Livewire either. Default now: carried forward as a design-stage preference, not a spec-level decision. — owner: Tech Lead, due: at `sdd:design livewire-dashboard`
+- [ ] Should a mechanism exist to detect/reclaim a CLI run stuck showing `running` because its process was killed or crashed before writing a final status (e.g. a timeout or heartbeat that transitions it to `failed`)? Default now: no such mechanism — the dashboard faithfully shows the last recorded value even if it has gone stale because the process died. — owner: Tech Lead, due: at `sdd:data-model livewire-dashboard`
+- [ ] Can a CLI run's status be cached in the future for performance, once §6's "0% stale-status reads" is read as written (a tautology if every read hits the record directly)? Default now: every status read reflects the record directly — no caching layer — until this is revisited. — owner: Tech Lead, due: at `sdd:design livewire-dashboard`

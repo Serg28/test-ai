@@ -92,49 +92,41 @@ Each tactical decision in later sections should trace to one of these seeds. Tac
 
 ## 5. Building block view
 
-<!-- 🎯 Why: INTERNAL DECOMPOSITION — modules, containers, datastores. The static topology: who
-     may talk to whom. Without §5, §6 (the flows) has no vocabulary of participants.
-     📋 Write: 1 ¶ on the style (layered / hexagonal / clean / event-driven) + a folder tree + a
-     C4Container block.
-     📌 Draw ONE Container per declared `target_surface` (frontmatter): a fullstack
-     [backend-service, web-frontend] = a backend-API container + a web/SPA container; a
-     [backend-service, mobile-app] = the API + the mobile app. The Container(web, …) line below is
-     just one surface's container — swap/add per what was declared in §4. → _shared/surfaces.md
-     📌 e.g. «web app, content API, media worker, datastore, object store, CDN». -->
-
-<One paragraph: layered / hexagonal / clean / event-driven, and why.>
+Flat Laravel-convention layout — no domain/app/infra layering exists anywhere in the repo yet, and a two-page read-only feature doesn't earn introducing one first. The dashboard adds one new folder (`app/Livewire/Dashboard/`) alongside the existing `app/Models/` and `app/Console/Commands/`, following the repo's one-class-per-responsibility style (ADR-0001).
 
 **Internal decomposition:**
 
 ```
-<e.g. modules/<feature>/>
-├── domain/       <entities + sentinel errors>
-├── app/          <use cases / services>
-├── infra/        <repository + integration impl>
-├── ports/        <handlers, DTOs, error mapping>
-└── wiring        <self-wiring entry point>
+app/Livewire/Dashboard/
+├── RunList.php     <full-page component — the run-history table, AC-01/AC-06>
+└── RunDetail.php    <full-page component — one run's detail, AC-02/AC-07>
+app/Models/
+└── CliRun.php        <the CLI-run entity — fields/migration are data-model's job>
+resources/views/livewire/dashboard/
+├── run-list.blade.php
+└── run-detail.blade.php
+routes/web.php         <dashboard.index, dashboard.show — Livewire components as direct route targets>
 ```
 
-**C4 Container (L2):** <!-- syntax → references/c4-mermaid-syntax.md. Real names, no <placeholder> stubs. ONE Container per declared target_surface (frontmatter); the web container below is one example surface. -->
+**C4 Container (L2):**
 
 ```mermaid
 C4Container
-    title <feature> — Containers
+    title livewire-dashboard — Containers
 
-    Person(actor, "<Actor>")
+    Person(dev, "Developer")
 
-    Container_Boundary(app, "<Our system>") {
-        Container(web, "<Web/UI>", "<technology>", "<purpose>")
-        Container(api, "<API/handler>", "<technology>", "<purpose>")
-        ContainerDb(db, "<Datastore>", "<technology>", "<purpose>")
+    Container_Boundary(app, "test-ai") {
+        Container(cli, "test-ai CLI", "PHP 8.3 / Laravel Artisan", "Console commands that execute AI test runs and record their status (existing/planned capability — not built by this feature)")
+        Container(dashboard, "Dashboard Web App", "Laravel 13.8 + Livewire (ADR-0001)", "Server-rendered run-list + run-detail pages, read-only")
     }
 
-    System_Ext(ext, "<External>", "<purpose>")
+    ContainerDb(db, "MariaDB", "MariaDB (Laradock)", "Stores CLI run records + application data")
 
-    Rel(actor, web, "<interaction>", "<protocol>")
-    Rel(web, api, "<calls>")
-    Rel(api, db, "<reads/writes>", "<driver>")
-    Rel(api, ext, "<emits>", "<protocol>")
+    Rel(dev, cli, "Invokes via docker exec -> php artisan <command>")
+    Rel(dev, dashboard, "Opens in a browser to view run history/detail")
+    Rel(cli, db, "Writes run status via Eloquent (out of scope for this feature)")
+    Rel(dashboard, db, "Reads CliRun records via Eloquent")
 ```
 
 ## 6. Runtime view

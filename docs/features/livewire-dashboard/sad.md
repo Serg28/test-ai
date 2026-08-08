@@ -271,6 +271,10 @@ Each top-3 goal from §1 expanded into a full scenario:
 
 | Term | Meaning |
 |---|---|
-| <e.g. domain object A> | <its meaning in this domain> |
-| <e.g. domain object B> | <its meaning> |
-| <e.g. domain invariant name> | <the rule, in plain language> |
+| CLI run | One execution of a `test-ai` CLI command, with a fixed status and timing, that the dashboard visualizes. Not the AI test/scenario the command runs — that's a different concept (CONTEXT.md). |
+| Developer | The person who runs `test-ai` CLI commands and reviews their results, including through the dashboard. The single actor of this feature — no distinct permission roles (CONTEXT.md). |
+| `CliRun` | The Eloquent model / entity backing a CLI run record (schema fixed at the `data-model` stage, not here). |
+| Stale-status read | A dashboard read that does not match the record's current DB value at the moment of that same load — the invariant §1/§10 fix at exactly 0%. |
+| Empty state | The dashboard's message shown when no CLI runs have been recorded yet, instead of a blank or broken table (AC-06). |
+
+<!-- Domain glossary terms are CONTEXT.md-canonical (roles: Developer; entities: CLI run). "CliRun", "Stale-status read", "Empty state" are design-introduced technical/UI terms surfaced during this walk — flagging for a possible `glossary` follow-up if reused by other features. -->

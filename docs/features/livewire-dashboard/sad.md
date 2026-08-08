@@ -34,30 +34,24 @@ target_surfaces: []  # filled in §4 — subset of: backend-service | web-fronte
 
 ## 2. Constraints
 
-<!-- 🎯 Why: §4 strategy only works when §2 has fixed WHAT IS ALREADY FIXED — stack, versions,
-     deadline, regulatory. This is an input, not an output.
-     📋 Write: four blocks — Technical / Organisational / Conventions / Regulatory.
-     📌 Pin versions («<datastore> 18», not «<datastore>»); «Q3 deadline — hard», not «ideally».
-     Never N/A — every feature inherits at least Conventions + Technical. -->
-
 **Technical.**
-- <Language + version>
-- <Framework(s) + version>
-- <Datastore(s) + version>
-- <Architecture convention — e.g. the layering style from the project convention file>
+- PHP 8.3.
+- Laravel ^13.8 (actual, from `composer.json`). **Override note:** `docs/architecture-map.md` currently states Laravel 11.x with "no HTTP layer / no frontend" — that is stale relative to the checked-out code (a full web skeleton — `routes/web.php`, `resources/views/`, `vite.config.js`, Tailwind v4 — is already on disk, just unused). This SAD documents the real stack; the map itself should be reconciled by re-running `survey` (tracked as a §11 risk).
+- MariaDB (Laradock, Docker), accessed only via Eloquent ORM from inside the `laradock-php-fpm-1` container.
+- Frontend build tooling already scaffolded but unstyled: Vite + `@tailwindcss/vite` v4 (`package.json`). Livewire is **not** yet a composer dependency — adding it is a §4 decision, not assumed here.
+- No architecture-layering convention is established yet beyond Laravel defaults (single-responsibility Console Commands, Eloquent Models) — no hexagonal/ports style in the repo to inherit.
 
 **Organisational.**
-- <Effort budget — e.g. 3 person-weeks>
-- <Deadline — e.g. 2026-Q3 hard>
-- <Team composition>
+- Effort budget: not stated in spec; `.size` classifies this feature M (1–2 sprints, new module/migration) — no sharper number given. TBD by PM (see §11).
+- Deadline: none stated in spec. TBD by PM (see §11).
+- Team: solo developer, course/demo-scale project (per spec §1, §6.1).
 
 **Conventions.**
-- <Link to the project's convention file>
-- <Naming, ID strategy, error-handling pattern>
+- `docs/architecture-map.md` §Conventions: Eloquent auto-increment integer PKs; migrations via `php artisan make:migration`; Pest tests in `tests/Unit/` + `tests/Feature/`; lint via `./vendor/bin/pint --test`.
+- Error handling: exceptions bubble to Laravel's default handler (`app/Exceptions/Handler.php`); no custom error-mapping layer exists yet.
 
 **Regulatory / external.**
-- <e.g. data-retention / deletion behaviour per ADR-NNNN>
-- <e.g. applicable compliance controls, or N/A with a reason>
+- N/A — internal course/demo data only, no PII, no compliance controls apply (spec §6.1).
 
 ## 3. Context and scope
 

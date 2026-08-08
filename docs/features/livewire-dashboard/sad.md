@@ -225,20 +225,20 @@ ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
 
 Each top-3 goal from §1 expanded into a full scenario:
 
-**QG-1. <quality attribute>**
-- **When:** <trigger condition>
-- **Then:** <expected behaviour with numbers from spec §6 NFR>
-- **How verify:** <test / chaos drill / load test / metric>
+**QG-1. Status accuracy**
+- **When:** a developer views the dashboard list or a run's detail.
+- **Then:** the displayed status/result exactly matches the `CliRun` record's current value — 0% stale-status reads (spec §6 NFR).
+- **How verify:** displayed status compared against the record's current value at the moment of that same load (spec §6's own measurement).
 
-**QG-2. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-2. Read performance**
+- **When:** a developer opens the dashboard list, or a run's detail page.
+- **Then:** p95 latency ≤ 500 ms for both the list load and the detail load (spec §6 NFR).
+- **How verify:** manual timing / CI smoke test, run at ≥ 5 req/s per instance (spec §6's throughput NFR, folded in here rather than a separate scenario).
 
-**QG-3. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-3. Availability**
+- **When:** any dashboard or detail page load occurs.
+- **Then:** ≥ 99% of loads succeed (spec §6 NFR).
+- **How verify:** % of successful dashboard/detail loads over total loads, tracked in application logs (spec §6's own measurement).
 
 ## 11. Risks and technical debt
 
